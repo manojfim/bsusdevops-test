@@ -1,0 +1,17 @@
+# I am installing ruby, nginx, passenger to deploy the ruby app. 
+
+sudo apt-get update
+mkdir ~/ruby
+cd ~/ruby
+wget http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.3.tar.gz
+tar -xzf ruby-2.1.3.tar.gz
+cd ruby-2.1.3
+./configure
+sudo make install
+ruby -v
+
+
+# installing passenger an nginx
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 561F9B9CAC40B2F7
+sudo nano /etc/apt/sources.list.d/passenger.list
