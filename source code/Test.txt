@@ -15,3 +15,91 @@ ruby -v
 
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 561F9B9CAC40B2F7
 sudo nano /etc/apt/sources.list.d/passenger.list
+deb https://oss-binaries.phusionpassenger.com/apt/passenger trusty main
+sudo chown root: /etc/apt/sources.list.d/passenger.list
+sudo chmod 600 /etc/apt/sources.list.d/passenger.list
+sudo apt-get install nginx-extras passenger
+sudo rm /usr/bin/ruby
+sudo ln -s /usr/local/bin/ruby /usr/bin/ruby
+
+
+#configuring up the webserver
+
+sudo nano /etc/nginx/nginx.conf
+
+#add 
+
+passenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;
+passenger_ruby /usr/local/bin/ruby;
+
+
+
+# deploying app
+
+sudo gem install --no-rdoc --no-ri rails
+rails new helloapp
+cd helloapp
+vim gemfile
+
+#add following conf to gemfile
+
+gem'sinatra' 
+gem 'puma'
+
+bundle install
+
+
+sudo vim /etc/nginx/sites-available/helloapp
+
+#add configuration about the server
+
+server {
+  listen 80 default_server;
+  passenger_enabled on;
+  passenger_app_env development;
+  root /home/rails/helloapp/public;
+}
+
+sudo nginx -s reload
+
+# now the applicaiton is deployed by integrating nginx and passenger webservers. 
+
+#To automate this process we can use chef
+
+# chef workstation
+
+sudo dpkp -i chef dk_0.9.0-1 amd64.deb
+mkdir chef-repo
+cd chef-repo
+unzip chef-starter-kit.zip
+chef generate cookbook 
+#downloading cookbooks
+
+knife cookbook site download ruby_installer
+knife cookbook site download nginx_passenger
+
+#uploading the cookbooks into the hosted chef
+
+knife cookbook upload ruby_installer
+knife cookbook upload nginx_passenger
+
+Knife bootstrap 10.0.2.15 --ssh-user root --ssh-password root --sudo --use-sudo-password --node -name node1 --runlist ‘recipe[ruby_installer, nginx_passenger]’
+
+
+#by bootstraping the nay given node, we can automate the installation process. 
+
+
+#AUTOSCALLING
+
+# As the server is residing in the AWS, we have an option of configuring instance with load balancer. By adding an load balancer to it we can automatically control the load on the application. The process goes like this is console. 
+
+#Created LB, added LB port as 80. 
+#Added subnets and configured according to the instance. 
+#Added security groups as of the instance.
+# Finally registered the load balancer with the instance. 
+
+
+
+
+
+
